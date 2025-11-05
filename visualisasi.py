@@ -140,94 +140,84 @@ with col2:
 st.markdown(
     """
     <div style="background-color:#fff7e6; padding:5px; border-radius:10px; margin-bottom:10px;">
-    <h4 style="text-align:center;">Penerimaan Pajak Penghasilan (PPh) Pasal 21 per Jenis Sektor</h4>
+    <h4 style="text-align:center;">3 Sektor Terbesar Penerimaan PPh Pasal 21 per Tahun (2020–2024)</h4>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-pph21_sektor = pph21_sektor.reset_index()
-sektor_col = pph21_sektor.columns[1]
 
-# Reshape dari wide ke long
+sektor_col = pph21_sektor.columns[0]
+
+# Ubah dari wide ke long format
 df_pph21_stack = pph21_sektor.melt(
     id_vars=[sektor_col],
     var_name="Tahun",
     value_name="Nilai"
 )
 
-# Hitung persentase kontribusi per tahun
-df_pph21_stack["Persen"] = df_pph21_stack.groupby("Tahun")["Nilai"].transform(lambda x: x / x.sum() * 100)
+df_pph21_stack["Kode Sektor"] = df_pph21_stack[sektor_col].apply(
+    lambda x: str(x).split("-", 1)[0].strip() if "-" in str(x) else str(x).strip()
+)
+df_pph21_stack["Nama Sektor"] = df_pph21_stack[sektor_col].apply(
+    lambda x: str(x).split("-", 1)[1].strip() if "-" in str(x) else str(x).strip()
+)
 
-# Pilihan tahun
-tahun_list = ["2020", "2021", "2022", "2023", "2024"]
-tahun_sektor = st.selectbox("Pilih Tahun", tahun_list)
+df_pph21_stack["Tahun"] = df_pph21_stack["Tahun"].astype(str).str.extract(r'(\d{4})')[0]
 
-# Filter sesuai tahun
-df_tahun = df_pph21_stack[df_pph21_stack["Tahun"] == tahun_sektor].copy()
-df_tahun["Kode Sektor"] = df_tahun[sektor_col].str.split("-").str[0].str.strip()
-df_tahun["Nama Sektor"] = df_tahun[sektor_col].str.split("-", n=1).str[1].str.strip()
+# Konversi kolom Nilai ke numerik
+df_pph21_stack["Nilai"] = (
+    df_pph21_stack["Nilai"]
+    .astype(str)
+    .str.replace("[^0-9.,]", "", regex=True)
+    .str.replace(",", ".", regex=False)
+    .astype(float)
+)
 
-# Buat bar chart
-fig_pph21_bar = px.bar(
-    df_tahun,
-    x="Kode Sektor",
+# Ambil 3 sektor terbesar per tahun
+df_top3_per_tahun = (
+    df_pph21_stack.sort_values(["Tahun", "Nilai"], ascending=[True, False])
+    .groupby("Tahun", group_keys=False)
+    .head(3)
+)
+
+# Ambil semua sektor unik yang pernah muncul di Top 3 (otomatis)
+unique_sektor = df_top3_per_tahun["Nama Sektor"].unique()
+
+df_top3_per_tahun = df_pph21_stack[
+    df_pph21_stack["Nama Sektor"].isin(unique_sektor)
+].sort_values(["Tahun", "Nilai"], ascending=[True, False]).groupby("Tahun", group_keys=False).head(3)
+
+# Grouped bar chart
+fig_pph21_top3 = px.bar(
+    df_top3_per_tahun,
+    x="Tahun",
     y="Nilai",
-    color="Kode Sektor",
-    hover_data={
-        "Nilai": ":,.2f",
-        "Persen": ":.2f",
-        "Tahun": True,
-        "Nama Sektor": True
+    color="Nama Sektor",
+    barmode="group",
+    text_auto=".2f",
+    labels={
+        "Nilai": "Penerimaan Pajak (Rp Miliar)",
+        "Tahun": "Tahun",
+        "Nama Sektor": "Sektor"
     },
-    color_discrete_sequence=["#183B4E"],
-    labels={"Nilai": "Nilai (Rp Miliar)"}
+    color_discrete_sequence=px.colors.qualitative.Set2
 )
-fig_pph21_bar.update_yaxes(range=[0, 80])
 
-fig_pph21_bar.update_layout(
+fig_pph21_top3.update_traces(textfont_size=11, textangle=0, textposition="outside")
+fig_pph21_top3.update_layout(
     yaxis=dict(title="Penerimaan Pajak (Rp Miliar)"),
-    xaxis=dict(title="Kode Sektor"),
-    showlegend=False
+    xaxis=dict(title="Tahun", categoryorder="category ascending"),
+    legend_title_text="Sektor (Top 3 per Tahun)",
+    bargap=0.2,
+    template="simple_white"
 )
 
-st.plotly_chart(fig_pph21_bar, use_container_width=True)
+st.plotly_chart(fig_pph21_top3, use_container_width=True)
 
-# Transformasi data
-df_melt = wp.melt(id_vars="Jenis WP", var_name="Kecamatan_Jenis", value_name="Jumlah")
-df_melt.rename(columns={"Jenis WP": "Tahun"}, inplace=True)
+col3, col4 = st.columns(2)
 
-# Split "Kecamatan Jenis" jadi 2 kolom
-df_melt[["Kecamatan", "Jenis"]] = df_melt["Kecamatan_Jenis"].str.rsplit(" ", n=1, expand=True)
-df_melt["Kecamatan"] = df_melt["Kecamatan"].str.replace("Kec ", "")
-
-# Line Chart per Jenis WP
-fig_line = px.line(
-    df_melt,
-    x="Tahun", 
-    y="Jumlah",
-    facet_col="Jenis",       
-    markers=True,
-    color="Kecamatan",
-    color_discrete_sequence=["#27548A","#80A1BA", "#87CEEB"]    
-
-)
-
-fig_line.update_layout(
-    height=380,
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=-0.6,
-        xanchor="center",
-        x=0.5
-    ),
-    legend_title_text="Kecamatan"
-)
-
-col1, col2 = st.columns(2)
-
-with col1:
+with col3:
     st.markdown(
         """
         <div style="background-color:#fff7e6; padding:5px; border-radius:10px; margin-bottom:10px;">
@@ -236,9 +226,53 @@ with col1:
         """,
         unsafe_allow_html=True
     )
-    st.plotly_chart(fig_line, use_container_width=True)
 
-with col2:
+    # Transformasi data
+    df_melt = wp.melt(id_vars="Jenis WP", var_name="Kecamatan_Jenis", value_name="Jumlah")
+    df_melt.rename(columns={"Jenis WP": "Tahun"}, inplace=True)
+
+    # Split "Kecamatan Jenis" jadi 2 kolom
+    df_melt[["Kecamatan", "Jenis"]] = df_melt["Kecamatan_Jenis"].str.rsplit(" ", n=1, expand=True)
+    df_melt["Kecamatan"] = df_melt["Kecamatan"].str.replace("Kec ", "", regex=False)
+
+    # Pilihan Jenis WP Interaktif 
+    jenis_list = sorted(df_melt["Jenis"].unique())
+    selected_jenis = st.selectbox("Pilih Jenis WP:", jenis_list, key="pilih_jenis_wp")
+
+    df_filtered = df_melt[df_melt["Jenis"] == selected_jenis]
+
+    # Grouped Bar Chart
+    fig_bar = px.bar(
+        df_filtered,
+        x="Tahun",
+        y="Jumlah",
+        color="Kecamatan",
+        barmode="group",
+        text_auto=True,
+        title=f"Tren Wajib Pajak Jenis {selected_jenis}",
+        color_discrete_sequence=["#27548A", "#80A1BA", "#87CEEB"]
+    )
+
+    fig_bar.update_traces(textfont_size=11, textposition="outside")
+    fig_bar.update_layout(
+        height=380,
+        yaxis_title="Jumlah Wajib Pajak",
+        xaxis_title="Tahun",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.6,
+            xanchor="center",
+            x=0.5
+        ),
+        legend_title_text="Kecamatan",
+        template="simple_white",
+        margin=dict(t=60, b=60)
+    )
+
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+with col4:
     st.markdown(
         """
         <div style="background-color:#fff7e6; padding:5px; border-radius:10px; margin-bottom:10px;">
@@ -260,14 +294,15 @@ with col2:
         facet_col="Kecamatan",
         color="Jenis",
         color_discrete_map={
-            "Badan": "#80A1BA",           
-            "OP": "#27548A",   
-            "Pemungut/Bendahara": "#87CEEB"  
+            "Badan": "#80A1BA",
+            "OP": "#27548A",
+            "Pemungut/Bendahara": "#87CEEB"
         }
     )
+
     fig_pie.update_layout(
         height=300,
-        margin=dict(t=40, b=80), 
+        margin=dict(t=40, b=80),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -280,4 +315,3 @@ with col2:
     )
 
     st.plotly_chart(fig_pie, use_container_width=True)
-
