@@ -209,8 +209,15 @@ pph22_growth = growth(current["pph22"], prev["pph22"] if prev is not None else N
 pph23_growth = growth(current["pph23"], prev["pph23"] if prev is not None else None)
 
 # Fungsi format rupiah
-def format_rupiah(value):
-    return f"Rp {value:,.0f}".replace(",", ".")
+def format_rupiah_singkat(nilai):
+    if nilai >= 1_000_000_000_000:
+        return f"Rp {nilai/1_000_000_000_000:.2f} T"
+    elif nilai >= 1_000_000_000:
+        return f"Rp {nilai/1_000_000_000:.2f} M"
+    elif nilai >= 1_000_000:
+        return f"Rp {nilai/1_000_000:.2f} Jt"
+    else:
+        return f"Rp {nilai:,.0f}".replace(",", ".")
 
 # Tampilan
 col1, col2, col3, col4 = st.columns(4)
@@ -220,7 +227,7 @@ with col1:
         f"""
         <div style="background-color: #eaeaea; padding:5px; border-radius:10px; text-align:center; box-shadow:7px 5px 8px rgba(255, 255, 224, 0.6);">
             <h4>Penerimaan PPN</h4>
-            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah(current['ppn'])}</h3>
+            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah_singkat(current['ppn'])}</h3>
             <p style="margin:0; font-size:12px; color:#555;">Growth Rate (Bulan)</p>
             <p style="color:{'green' if ppn_growth>=0 else 'red'}; margin:0; font-weight:bold;">
                 {'⬆' if ppn_growth>=0 else '⬇'} {ppn_growth:.1f}%
@@ -234,7 +241,7 @@ with col2:
         f"""
         <div style="background-color:#eaeaea; padding:5px; border-radius:10px; text-align:center; box-shadow:7px 5px 8px rgba(0,0,0,0.1);">
             <h4>Penerimaan PPh 21</h4>
-            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah(current['pph21'])}</h3>
+            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah_singkat(current['pph21'])}</h3>
             <p style="margin:0; font-size:12px; color:#555;">Growth Rate (Bulan)</p>
             <p style="color:{'green' if pph21_growth>=0 else 'red'}; margin:0;">
                 {'⬆' if pph21_growth>=0 else '⬇'} {pph21_growth:.1f}%
@@ -248,7 +255,7 @@ with col3:
         f"""
         <div style="background-color:#eaeaea; padding:5px; border-radius:10px; text-align:center; box-shadow:7px 5px 8px rgba(0,0,0,0.1);">
             <h4>Penerimaan PPh 22</h4>
-            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah(current['pph22'])}</h3>
+            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah_singkat(current['pph22'])}</h3>
             <p style="margin:0; font-size:12px; color:#555;">Growth Rate (Bulan)</p>
             <p style="color:{'green' if pph22_growth>=0 else 'red'}; margin:0;">
                 {'⬆' if pph22_growth>=0 else '⬇'} {pph22_growth:.1f}%
@@ -262,7 +269,7 @@ with col4:
         f"""
         <div style="background-color:#eaeaea; padding:5px; border-radius:10px; text-align:center; box-shadow:7px 5px 8px rgba(0,0,0,0.1);">
             <h4>Penerimaan PPh 23</h4>
-            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah(current['pph23'])}</h3>
+            <h3 style="color:#183B4E; margin:5px 0; font-size:20px;">{format_rupiah_singkat(current['pph23'])}</h3>
             <p style="margin:0; font-size:12px; color:#555;">Growth Rate (Bulan)</p>
             <p style="color:{'green' if pph23_growth>=0 else 'red'}; margin:0;">
                 {'⬆' if pph23_growth>=0 else '⬇'} {pph23_growth:.1f}%
@@ -336,3 +343,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
