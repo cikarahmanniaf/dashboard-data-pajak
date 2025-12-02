@@ -44,6 +44,9 @@ with col1:
             Dosen Pembimbing:
             Dr. Santi Wulan Purnami, S.Si, M.Si
 
+            Pembimbing Lapangan:
+            Diyah Meriana Historini
+            
             Mahasiswa:
             Ilma Fitriyani
             (5003221063)
@@ -66,6 +69,9 @@ with col2:
             Dosen Pembimbing:
             Dr. Achmad Choiruddin, S.Si, M.Sc
 
+            Pembimbing Lapangan:
+            Diyah Meriana Historini
+
             Mahasiswa: 
             Cika Rahmannia Febrianti
             (5003221081)
@@ -78,4 +84,5 @@ with col2:
         """,
         unsafe_allow_html=True
     )
+
 
