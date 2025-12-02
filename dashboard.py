@@ -29,8 +29,9 @@ st.markdown(
 home = st.Page("home.py", title="Beranda", icon=":material/home:")
 informasi = st.Page("informasi.py", title="Informasi Pajak", icon=":material/info:")
 analisis_visual = st.Page("visualisasi.py", title="Visualisasi Data", icon=":material/monitoring:")
-profil = st.Page("profil.py", title="Profil Penulis", icon=":material/account_circle:")
+profil = st.Page("profil.py", title="Profil Pencipta", icon=":material/account_circle:")
 
 # Navigasi utama
 pg = st.navigation([home, informasi, analisis_visual, profil])
 pg.run()
+
