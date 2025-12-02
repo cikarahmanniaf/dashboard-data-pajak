@@ -12,16 +12,25 @@ st.markdown("""
 st.markdown("""
 <style>
     .profile-card {
-        background-color: #183B4E; 
-        padding: 20px;
+        background-color: #183B4E;
+        padding: 25px 30px;
         border-radius: 15px;
-        text-align: center; 
+        text-align: center;
         box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         margin: 10px;
         color: white;
-        height: 520px;
-        line-height: 2;
+    
+        /* 🔥 FIX LEBIHAN / MELEBER */
+        min-height: 520px;
+        max-height: 520px;
+        overflow: hidden;
+        
+        line-height: 1.55;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
     }
+
     .circle-img {
         width: 150px;   
         height: 150px;  
@@ -84,6 +93,7 @@ with col2:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
