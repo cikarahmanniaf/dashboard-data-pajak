@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Profil")
+st.title("Profil Pencipta")
 
 st.markdown("""
 <div style="text-align:center; margin-top:5px;">
@@ -84,5 +84,6 @@ with col2:
         """,
         unsafe_allow_html=True
     )
+
 
 
