@@ -20,7 +20,7 @@ st.markdown("""
         margin: 10px;
         color: white;
         height: 520px;
-        line-height: 1.6;
+        line-height: 2;
     }
     .circle-img {
         width: 150px;   
@@ -84,6 +84,7 @@ with col2:
         """,
         unsafe_allow_html=True
     )
+
 
 
 
